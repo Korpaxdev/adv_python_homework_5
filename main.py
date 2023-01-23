@@ -106,6 +106,38 @@ def test_2():
             assert str(item) in log_file_content, f'{item} должен быть записан в файл'
 
 
+def flat_list_gen(deep_list):
+    cursors = [0]
+    old = []
+    current = deep_list
+    while cursors:
+        index = cursors[-1]
+        if index >= len(current):
+            current = old.pop() if old else []
+            cursors.pop()
+            continue
+        item = current[index]
+        if isinstance(item, list):
+            cursors[-1] = index + 1
+            cursors.append(0)
+            old.append(current)
+            current = item
+            continue
+        cursors[-1] = index + 1
+        yield item
+
+
+@logger_v2(path='flat_list.log')
+def get_flat_list(deep_list):
+    return list(flat_list_gen(deep_list))
+
+
 if __name__ == '__main__':
     test_1()
     test_2()
+    list_of_lists_2 = [
+        [['a'], ['b', 'c']],
+        ['d', 'e', [['f'], 'h'], False],
+        [1, 2, None, [[[[['!']]]]], []]
+    ]
+    get_flat_list(list_of_lists_2)
